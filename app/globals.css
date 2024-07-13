@@ -1,9 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
+ 
 html,
 body,
-.root {
+:root {
   height: 100%;
 }
+
+/* next js
+tailwind css
+clerk (Authentication)
+ui shadcn
+cloudinary */
