@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
-import { error } from "console";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
