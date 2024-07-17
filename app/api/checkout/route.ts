@@ -16,22 +16,22 @@ export async function POST(req: NextRequest) {
     const { cartItems, customer } = await req.json();
 
     if (!cartItems || !customer) {
-      return new NextResponse(JSON.stringify({ error: "Not enough data to checkout" }), { status: 400, headers: corsHeaders });
+      return new NextResponse("Not enough data to checkout", { status: 400 });
     }
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
       shipping_address_collection: {
-        allowed_countries: ["US", "CA", "IN"],
+        allowed_countries: ["US", "CA"],
       },
       shipping_options: [
-        { shipping_rate: "shr_1PdCIRRtqbJfWaOlz5QuGOqz" },
-        { shipping_rate: "shr_1PdCGPRtqbJfWaOlQiXLrQqv" },
+        { shipping_rate: "shr_1MfufhDgraNiyvtnDGef2uwK" },
+        { shipping_rate: "shr_1OpHFHDgraNiyvtnOY4vDjuY" },
       ],
       line_items: cartItems.map((cartItem: any) => ({
         price_data: {
-          currency: "usd",
+          currency: "cad",
           product_data: {
             name: cartItem.item.title,
             metadata: {
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
               ...(cartItem.color && { color: cartItem.color }),
             },
           },
-          unit_amount: Math.round(cartItem.item.price * 100), // Convert to cents and ensure it's an integer
+          unit_amount: cartItem.item.price * 100,
         },
         quantity: cartItem.quantity,
       })),
@@ -50,8 +50,8 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(session, { headers: corsHeaders });
-  } catch (error) {
-    console.log("[checkout_POST]", error);
-    return new NextResponse(JSON.stringify("Internal Server Error" ), { status: 500, headers: corsHeaders });
+  } catch (err) {
+    console.log("[checkout_POST]", err);
+    return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
