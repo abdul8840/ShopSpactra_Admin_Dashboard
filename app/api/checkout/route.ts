@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
+import { error } from "console";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,7 +17,7 @@ export async function POST(req: NextRequest) {
     const { cartItems, customer } = await req.json();
 
     if (!cartItems || !customer) {
-      return new NextResponse("Not enough data to checkout", { status: 400 });
+      return new NextResponse(JSON.stringify({ error: "Not enough data to checkout" }), { status: 400, headers: corsHeaders });
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
               ...(cartItem.color && { color: cartItem.color }),
             },
           },
-          unit_amount: cartItem.item.price * 100,
+          unit_amount: Math.round(cartItem.item.price * 100), // Convert to cents and ensure it's an integer
         },
         quantity: cartItem.quantity,
       })),
@@ -50,8 +51,8 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(session, { headers: corsHeaders });
-  } catch (err) {
-    console.log("[checkout_POST]", err);
-    return new NextResponse("Internal Server Error", { status: 500 });
+  } catch (error) {
+    console.log("[checkout_POST]", error);
+    return new NextResponse(JSON.stringify("Internal Server Error" ), { status: 500, headers: corsHeaders });
   }
 }
